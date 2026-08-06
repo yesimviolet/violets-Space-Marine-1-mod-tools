@@ -1,7 +1,9 @@
 # violet-s-Space-Marine-1-mod-tools
 Some tools I have made for Space Marine One modding alongside a couple original tools from santos and Copernicus aka cope With some improvements
 
-To enable mods on Space Marine 1
+## To download the tools click code and download zip
+
+## To enable mods on Space Marine 1
 1. go to steam Right click Space Marine 1
 2. click Properties 
 3. Go to Launch options and input -usepreview And mods will be enabled and it will disable multiplayer when you are using mods (Still trying to figure out some sort of way to play multiplayer with mods)
@@ -14,7 +16,7 @@ Which allows for converting both bod and attr_pc files All in one program
 
 ## sm1 dcm import export 
 
-Which is a blender importer and exporter for sm1 DCM models That also includes a custom shader created by me and it also will auto import the textures set up the shader automatically as well
+Which is a blender 5.0.1 and above importer and exporter for sm1 DCM models That also includes a custom shader created by me and it also will auto import the textures set up the shader automatically as well And to install just install the zip like any other add on
 
 ## smoppc.exe and .bat by santos
 
