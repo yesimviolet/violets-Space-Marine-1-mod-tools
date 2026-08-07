@@ -48,3 +48,7 @@ GREEN = Emissive
 BLUE = Mask for _ref
 
 There is a secondary type of _lp But I haven't figured out what it's Channels are used for
+
+# Miscellaneous 
+
+The secondary UV map on models is for blood splatter
