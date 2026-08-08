@@ -10,9 +10,9 @@ Some tools I have made for Space Marine One modding alongside a couple original 
 
 # tools that are Included
 
-## smbod_attrib_converter
+## smbod_attrib_locale_converter
 
-Which allows for converting both bod and attr_pc files All in one program 
+Which allows for converting bod, locale and attr_pc files All in one program 
 
 ## sm1 dcm import export 
 
@@ -24,7 +24,7 @@ Place in the root of your Space Marine One folder and double click the bat file 
 
 ## pbr_to_spc 
 
-Allows you to convert Standard PBR textures to SM1 textures 
+Allows you to convert Standard PBR textures to SM1 textures And Converting sm1 Textures to PBR 
 
 # Texture formats
 

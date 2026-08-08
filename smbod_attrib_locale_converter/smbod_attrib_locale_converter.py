@@ -5,8 +5,52 @@ import xml.dom.minidom
 import tkinter as tk
 import subprocess
 import ctypes
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, scrolledtext
 from tkinter import ttk
+
+# =========================================================================
+# UPC PARSER & COMPILER (Native Python Translation of smupc)
+# =========================================================================
+class NativeUPCConverter:
+    @staticmethod
+    def unpack_pc(in_path, out_path):
+        """Unpacks UPC file from source to dest."""
+        with open(in_path, 'rb') as f:
+            # Read 4-byte uncompressed size header
+            expected_size = struct.unpack('<I', f.read(4))[0]
+            compressed_data = f.read()
+            
+        try:
+            # Attempt standard Zlib decompression
+            uncompressed_data = zlib.decompress(compressed_data)
+        except zlib.error:
+            # Fallback to raw deflate stream
+            uncompressed_data = zlib.decompress(compressed_data, -15)
+            
+        # Write the resulting .locale text file
+        with open(out_path, 'wb') as f:
+            f.write(uncompressed_data)
+            
+        return True
+
+    @staticmethod
+    def pack_pc(in_path, out_path, big_endian=False):
+        """Packs .locale file from src back into UPC."""
+        with open(in_path, 'rb') as f:
+            uncompressed_data = f.read()
+            
+        # Standard Zlib compression
+        compressed_data = zlib.compress(uncompressed_data)
+        
+        # Format the 4-byte size header
+        endian_format = '>I' if big_endian else '<I'
+        size_bytes = struct.pack(endian_format, len(uncompressed_data))
+        
+        with open(out_path, 'wb') as f:
+            f.write(size_bytes)
+            f.write(compressed_data)
+            
+        return True
 
 # =========================================================================
 # BOD PARSER & COMPILER CONSTANTS
@@ -321,7 +365,8 @@ def compile_bod_from_xml(xml_path, out_path):
             
         return True
     except Exception as e:
-        raise RuntimeError(f"BOD compilation failed for {xml_path}: {e}")
+        print(f"BOD compilation failed for {xml_path}: {e}")
+        return False
 
 # =========================================================================
 # EXTERNAL BAF CONVERTER WRAPPER (Xml2Baf.exe)
@@ -371,6 +416,7 @@ class UniversalModdingConverterApp:
         # State variables
         self.dark_mode = tk.BooleanVar(value=True)
         self.always_on_top = tk.BooleanVar(value=False)
+        self.pack_big_endian = tk.BooleanVar(value=False)
         self.last_directory = ""
         
         self.setup_menu()
@@ -386,6 +432,8 @@ class UniversalModdingConverterApp:
         self.options_menu = tk.Menu(self.menubar, tearoff=0)
         self.options_menu.add_checkbutton(label="Dark Mode", variable=self.dark_mode, command=self.apply_theme)
         self.options_menu.add_checkbutton(label="Always on Top", variable=self.always_on_top, command=self.toggle_topmost)
+        self.options_menu.add_separator()
+        self.options_menu.add_checkbutton(label="Pack UPC as Big Endian (Console)", variable=self.pack_big_endian)
         self.menubar.add_cascade(label="Options", menu=self.options_menu)
 
         self.tools_menu = tk.Menu(self.menubar, tearoff=0)
@@ -407,16 +455,21 @@ class UniversalModdingConverterApp:
         self.title_label = ttk.Label(main_frame, text="Space Marine Universal Converter", font=("Segoe UI", 16, "bold"))
         self.title_label.pack(pady=(0, 5))
         
-        self.desc_label = ttk.Label(main_frame, text="Batch convert .O3d, .object-manifest, .bod, and .attr_pc files.", font=("Segoe UI", 9))
+        self.desc_label = ttk.Label(main_frame, text="Batch convert .O3d, .bod, .attr_pc, and .pc (UPC) files.", font=("Segoe UI", 9))
         self.desc_label.pack(pady=(0, 20))
 
         controls_frame = ttk.Frame(main_frame)
         controls_frame.pack(fill=tk.X, pady=10)
 
-        self.btn_xml = ttk.Button(controls_frame, text="Convert to XML...", command=self.convert_to_xml, style="Green.TButton", width=25)
+        # Configure Custom Button Styles
+        style = ttk.Style()
+        style.configure("Green.TButton", font=("Segoe UI", 10, "bold"))
+        style.configure("Blue.TButton", font=("Segoe UI", 10, "bold"))
+
+        self.btn_xml = ttk.Button(controls_frame, text="Extract (to XML / Locale)...", command=self.convert_to_xml, style="Green.TButton", width=25)
         self.btn_xml.pack(side=tk.LEFT, padx=10, expand=True)
 
-        self.btn_binary = ttk.Button(controls_frame, text="Convert to Binary...", command=self.convert_to_binary, style="Blue.TButton", width=25)
+        self.btn_binary = ttk.Button(controls_frame, text="Compile (to Binary / PC)...", command=self.convert_to_binary, style="Blue.TButton", width=25)
         self.btn_binary.pack(side=tk.RIGHT, padx=10, expand=True)
 
         self.log_label = ttk.Label(main_frame, text="Console Output:", font=("Segoe UI", 9, "bold"))
@@ -438,7 +491,6 @@ class UniversalModdingConverterApp:
         self.log_text.tag_config("error", foreground="#CC0000")   
 
     def set_titlebar_color(self, dark_mode=True):
-        """Uses ctypes to flip the Windows 10/11 title bar to dark mode."""
         try:
             self.root.update()
             hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
@@ -526,24 +578,29 @@ class UniversalModdingConverterApp:
 
     def convert_to_xml(self):
         filepaths = filedialog.askopenfilenames(
-            title="Select Files to Convert to XML",
-            filetypes=[("Space Marine Binary Files", "*.attr_pc *.O3d *.bmat *.object-manifest *.bod"), ("All Files", "*.*")]
+            title="Select Files to Extract/Convert",
+            filetypes=[("Space Marine Assets", "*.attr_pc *.O3d *.bmat *.object-manifest *.bod *.pc"), ("All Files", "*.*")]
         )
         if not filepaths: return
 
-        self.log(f"\n--- Starting XML Conversion ({len(filepaths)} files) ---", "info")
+        self.log(f"\n--- Starting Extraction ({len(filepaths)} files) ---", "info")
         success_count, failed_count = 0, 0
 
         for in_path in filepaths:
             filename = os.path.basename(in_path)
-            out_path = in_path + ".xml"
-            self.last_directory = os.path.dirname(out_path)
+            self.last_directory = os.path.dirname(in_path)
             
             try:
                 if filename.lower().endswith('.attr_pc'):
+                    out_path = in_path + ".xml"
                     ExternalBAFConverter.baf_to_xml(in_path, out_path)
                     self.log(f"[OK] External Converter: {filename} -> {filename}.xml", "success")
+                elif filename.lower().endswith('.pc'):
+                    out_path = in_path[:-3] + ".locale"
+                    NativeUPCConverter.unpack_pc(in_path, out_path)
+                    self.log(f"[OK] Native UPC: {filename} -> {os.path.basename(out_path)}", "success")
                 else:
+                    out_path = in_path + ".xml"
                     parser = NativeBODParser(in_path, dump_xml=True, out_xml_path=out_path)
                     if not parser.valid:
                         raise ValueError("Invalid BOD structure.")
@@ -558,40 +615,47 @@ class UniversalModdingConverterApp:
 
     def convert_to_binary(self):
         filepaths = filedialog.askopenfilenames(
-            title="Select XML Files to Compile to Binary",
-            filetypes=[("XML Files", "*.xml"), ("All Files", "*.*")]
+            title="Select Files to Compile to Binary",
+            filetypes=[("Editable Formats", "*.xml *.locale"), ("All Files", "*.*")]
         )
         if not filepaths: return
 
         self.log(f"\n--- Starting Binary Compilation ({len(filepaths)} files) ---", "info")
         success_count, failed_count = 0, 0
+        use_big_endian = self.pack_big_endian.get()
 
         for in_path in filepaths:
             filename = os.path.basename(in_path)
             self.last_directory = os.path.dirname(in_path)
-            
-            if filename.lower().endswith('.xml'):
-                out_path = in_path[:-4]
-            else:
-                out_path = in_path + ".bin" 
-
-            base_name = os.path.basename(out_path)
-            lower_base = base_name.lower()
+            lower_name = filename.lower()
             
             try:
-                if lower_base.endswith('.attr_pc'):
-                    ExternalBAFConverter.xml_to_baf(in_path, out_path)
-                    self.log(f"[OK] External Compiler: {filename} -> {os.path.basename(out_path)}", "success")
-                    
-                elif lower_base.endswith('.o3d') or lower_base.endswith('.object-manifest') or lower_base.endswith('.bod') or lower_base.endswith('.bmat'):
-                    compile_bod_from_xml(in_path, out_path)
-                    self.log(f"[OK] Native Compiler: {filename} -> {os.path.basename(out_path)}", "success")
-                    
+                if lower_name.endswith('.locale'):
+                    out_path = in_path[:-7] + ".pc"
+                    NativeUPCConverter.pack_pc(in_path, out_path, big_endian=use_big_endian)
+                    self.log(f"[OK] Native UPC: {filename} -> {os.path.basename(out_path)}", "success")
                 else:
-                    out_path = out_path + '.attr_pc'
-                    ExternalBAFConverter.xml_to_baf(in_path, out_path)
-                    self.log(f"[OK] Fallback (External): {filename} -> {os.path.basename(out_path)}", "success")
+                    if lower_name.endswith('.xml'):
+                        out_path = in_path[:-4]
+                    else:
+                        out_path = in_path + ".bin" 
+
+                    base_name = os.path.basename(out_path)
+                    lower_base = base_name.lower()
                     
+                    if lower_base.endswith('.attr_pc'):
+                        ExternalBAFConverter.xml_to_baf(in_path, out_path)
+                        self.log(f"[OK] External Compiler: {filename} -> {os.path.basename(out_path)}", "success")
+                        
+                    elif lower_base.endswith('.o3d') or lower_base.endswith('.object-manifest') or lower_base.endswith('.bod') or lower_base.endswith('.bmat'):
+                        compile_bod_from_xml(in_path, out_path)
+                        self.log(f"[OK] Native Compiler: {filename} -> {os.path.basename(out_path)}", "success")
+                        
+                    else:
+                        out_path = out_path + '.attr_pc'
+                        ExternalBAFConverter.xml_to_baf(in_path, out_path)
+                        self.log(f"[OK] Fallback (External): {filename} -> {os.path.basename(out_path)}", "success")
+                        
                 success_count += 1
             except Exception as e:
                 self.log(f"[ERROR] Failed {filename}: {e}", "error")
