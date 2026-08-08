@@ -3,5 +3,3 @@ update 1
 changed smbod_attrib_converter to smbod_attrib_locale_converter because it now supports converting locale files
 
 updated pbr_to_spc to allow for batch Processing and Allowing for spc to PBR Which works pretty well for most textures but some textures will require manual editing 
-
-updated the DCM importer because I had found it wasn't importing meshes that had multiple materials correctly It was only importing the material from the top of the object manifest  
