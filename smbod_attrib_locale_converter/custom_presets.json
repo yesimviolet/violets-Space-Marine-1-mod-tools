@@ -1,0 +1,185 @@
+{
+    "Force Helmet On (wears_helmet_by_default)": {
+        "key": "wears_helmet_by_default",
+        "target": "True",
+        "toggle": "False"
+    },
+    "Set Clip Capacity to Bottomless (9999)": {
+        "key": "capacity_clip",
+        "target": "9999",
+        "toggle": "30"
+    },
+    "Toggle Infinite Reserve Ammo": {
+        "key": "capacity_reserve_infinite",
+        "target": "True",
+        "toggle": "False"
+    },
+    "Zero Ammo Consumption (Per Shot)": {
+        "key": "amount",
+        "target": "0",
+        "toggle": "1"
+    },
+    "--- DAMAGE & COMBAT ---": {
+        "key": "none",
+        "target": "none"
+    },
+    "Insta-Kill Damage (General)": {
+        "key": "damage_general",
+        "target": "9999",
+        "toggle": "15"
+    },
+    "Heavy Armor Breaker Enabled": {
+        "key": "armourshield_breaker",
+        "target": "True",
+        "toggle": "False"
+    },
+    "Destroy Health Stages Instantly": {
+        "key": "destroy_active_health_stage",
+        "target": "True",
+        "toggle": "False"
+    },
+    "Sniper Range (Max Range)": {
+        "key": "max_range",
+        "target": "2000",
+        "toggle": "150"
+    },
+    "360-Degree Fire Cone": {
+        "key": "allowed_fire_cone",
+        "target": "360",
+        "toggle": "180"
+    },
+    "Massive Fury Generation (Per Hit)": {
+        "key": "fury_amount",
+        "target": "100",
+        "toggle": "1"
+    },
+    "Infinite Penetration Power": {
+        "key": "points",
+        "target": "999",
+        "toggle": "1"
+    },
+    "--- FIRE RATE OVERRIDES (SINGLE VALUES) ---": {
+        "key": "none",
+        "target": "none"
+    },
+    "Minigun Shot Cooldown": {
+        "key": "shot_cooldown",
+        "target": "0.01",
+        "toggle": "0.133"
+    },
+    "Minigun Time Between Shots": {
+        "key": "time_between_shots",
+        "target": "0.01",
+        "toggle": "0.133"
+    },
+    "--- VISUALS & ANIMATION ---": {
+        "key": "none",
+        "target": "none"
+    },
+    "Enable Gore on Weapon Model": {
+        "key": "receive_gore",
+        "target": "True",
+        "toggle": "False"
+    },
+    "Mute Reload Speech": {
+        "key": "trigger_reload_speech",
+        "target": "False",
+        "toggle": "True"
+    },
+    "Disable Pre-Fire Warmup": {
+        "key": "warmup_time",
+        "target": "0",
+        "toggle": "1"
+    },
+    "Zero Global Recovery Time": {
+        "key": "global_recovery_time",
+        "target": "0",
+        "toggle": "1"
+    },
+    "--- HIERARCHICAL BRANCH PRESETS ---": {
+        "key": "none",
+        "target": "none"
+    },
+    "[Branch] Extreme Headshot Multipliers (10x)": {
+        "hierarchy": {
+            "damage_material_multipliers[4]": {
+                "default_head": "10.0",
+                "tough_head": "10.0"
+            }
+        }
+    },
+    "[Branch] Extreme Anti-Armor Multipliers (10x)": {
+        "hierarchy": {
+            "damage_material_multipliers[4]": {
+                "default_heavy_armor": "10.0",
+                "tough_heavy_armor": "10.0",
+                "default_shield": "10.0",
+                "tough_shield": "10.0"
+            }
+        }
+    },
+    "[Branch] Zero Penetration Resistance (Shoot Through Anything)": {
+        "hierarchy": {
+            "material_penetration_costs[2]": {
+                "default": "0",
+                "default_head": "0",
+                "tough_head": "0",
+                "default_body": "0",
+                "tough_body": "0",
+                "default_light_armor": "0",
+                "tough_light_armor": "0",
+                "default_heavy_armor": "0",
+                "tough_heavy_armor": "0",
+                "default_shield": "0",
+                "tough_shield": "0",
+                "default_explosive": "0"
+            }
+        }
+    },
+    "[Branch] Base Weapon Tuning -> Rapid Fire": {
+        "hierarchy": {
+            "basic_weapon_tuning[22]/entry[0]": {
+                "shot_cooldown": "0.02",
+                "time_between_shots": "0.02",
+                "burst_length": "0"
+            }
+        }
+    },
+    "[Branch] Kraken Rounds Tuning -> Rapid Fire": {
+        "hierarchy": {
+            "basic_weapon_tuning[22]/entry[2]": {
+                "shot_cooldown": "0.02",
+                "time_between_shots": "0.02"
+            }
+        }
+    },
+    "[Branch] Instant Reload Times (Standard)": {
+        "hierarchy": {
+            "reload_upgrade_info[6]/non fury[0]": {
+                "triggered_reload_time": "0.01",
+                "auto_reload_time": "0.01"
+            }
+        }
+    },
+    "[Branch] Instant Reload Times (Fury Mode)": {
+        "hierarchy": {
+            "reload_upgrade_info[6]/fury[1]": {
+                "triggered_reload_time": "0.01",
+                "auto_reload_time": "0.01"
+            }
+        }
+    },
+    "[Branch] Remove Distance Damage Falloff": {
+        "hierarchy": {
+            "damage_fall_off[18]/fall_off_entry[3]": {
+                "damage_multiplier": "1.0"
+            },
+            "damage_fall_off[18]/fall_off_entry[4]": {
+                "damage_multiplier": "1.0"
+            },
+            "damage_fall_off[18]/fall_off_entry[5]": {
+                "damage_multiplier": "1.0"
+            }
+        }
+    }
+}

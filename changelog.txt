@@ -3,3 +3,15 @@ update 1
 changed smbod_attrib_converter to smbod_attrib_locale_converter because it now supports converting locale files
 
 updated pbr_to_spc to allow for batch Processing and Allowing for spc to PBR Which works pretty well for most textures but some textures will require manual editing 
+
+update 2
+
+updated smbod_attrib_locale_converter to make sure it had all the supported files selectable
+
+added AttributeEditor Which is similar to Integration Studio for sm2
+
+updated pbr_to_spc to support sfm textures (Only tested on joazzz models)
+
+updated the dcm importer To fix some meshes being imported broken I found that it Primarily effected map geometry
+
+added .world importer Which allows you to import the world filesWhich is short term basically allows you to import all the DCM related to a map

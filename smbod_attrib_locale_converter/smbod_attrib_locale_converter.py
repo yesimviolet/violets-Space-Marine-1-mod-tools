@@ -16,18 +16,14 @@ class NativeUPCConverter:
     def unpack_pc(in_path, out_path):
         """Unpacks UPC file from source to dest."""
         with open(in_path, 'rb') as f:
-            # Read 4-byte uncompressed size header
             expected_size = struct.unpack('<I', f.read(4))[0]
             compressed_data = f.read()
             
         try:
-            # Attempt standard Zlib decompression
             uncompressed_data = zlib.decompress(compressed_data)
         except zlib.error:
-            # Fallback to raw deflate stream
             uncompressed_data = zlib.decompress(compressed_data, -15)
             
-        # Write the resulting .locale text file
         with open(out_path, 'wb') as f:
             f.write(uncompressed_data)
             
@@ -39,10 +35,8 @@ class NativeUPCConverter:
         with open(in_path, 'rb') as f:
             uncompressed_data = f.read()
             
-        # Standard Zlib compression
         compressed_data = zlib.compress(uncompressed_data)
         
-        # Format the 4-byte size header
         endian_format = '>I' if big_endian else '<I'
         size_bytes = struct.pack(endian_format, len(uncompressed_data))
         
@@ -365,8 +359,7 @@ def compile_bod_from_xml(xml_path, out_path):
             
         return True
     except Exception as e:
-        print(f"BOD compilation failed for {xml_path}: {e}")
-        return False
+        raise RuntimeError(f"BOD compilation failed for {xml_path}: {e}")
 
 # =========================================================================
 # EXTERNAL BAF CONVERTER WRAPPER (Xml2Baf.exe)
@@ -413,7 +406,6 @@ class UniversalModdingConverterApp:
         self.root.title("Space Marine Universal Converter")
         self.root.geometry("600x420")
         
-        # State variables
         self.dark_mode = tk.BooleanVar(value=True)
         self.always_on_top = tk.BooleanVar(value=False)
         self.pack_big_endian = tk.BooleanVar(value=False)
@@ -455,13 +447,12 @@ class UniversalModdingConverterApp:
         self.title_label = ttk.Label(main_frame, text="Space Marine Universal Converter", font=("Segoe UI", 16, "bold"))
         self.title_label.pack(pady=(0, 5))
         
-        self.desc_label = ttk.Label(main_frame, text="Batch convert .O3d, .bod, .attr_pc, and .pc (UPC) files.", font=("Segoe UI", 9))
+        self.desc_label = ttk.Label(main_frame, text="Batch convert .O3d, .object-manifest, .bod, .attr_pc, .PSystem, .Layer, .region, .world, .ssdecal, and .pc files.", font=("Segoe UI", 9))
         self.desc_label.pack(pady=(0, 20))
 
         controls_frame = ttk.Frame(main_frame)
         controls_frame.pack(fill=tk.X, pady=10)
 
-        # Configure Custom Button Styles
         style = ttk.Style()
         style.configure("Green.TButton", font=("Segoe UI", 10, "bold"))
         style.configure("Blue.TButton", font=("Segoe UI", 10, "bold"))
@@ -475,7 +466,6 @@ class UniversalModdingConverterApp:
         self.log_label = ttk.Label(main_frame, text="Console Output:", font=("Segoe UI", 9, "bold"))
         self.log_label.pack(anchor=tk.W, pady=(15, 5))
 
-        # Manually constructed Text and Scrollbar for precise theme control
         text_frame = ttk.Frame(main_frame)
         text_frame.pack(fill=tk.BOTH, expand=True, pady=5)
         
@@ -579,7 +569,7 @@ class UniversalModdingConverterApp:
     def convert_to_xml(self):
         filepaths = filedialog.askopenfilenames(
             title="Select Files to Extract/Convert",
-            filetypes=[("Space Marine Assets", "*.attr_pc *.O3d *.bmat *.object-manifest *.bod *.pc"), ("All Files", "*.*")]
+            filetypes=[("Space Marine Binary Files", "*.attr_pc *.O3d *.bmat *.object-manifest *.bod *.pc *.PSystem *.Layer *.region *.world *.ssdecal"), ("All Files", "*.*")]
         )
         if not filepaths: return
 
@@ -615,7 +605,7 @@ class UniversalModdingConverterApp:
 
     def convert_to_binary(self):
         filepaths = filedialog.askopenfilenames(
-            title="Select Files to Compile to Binary",
+            title="Select XML Files to Compile to Binary",
             filetypes=[("Editable Formats", "*.xml *.locale"), ("All Files", "*.*")]
         )
         if not filepaths: return
@@ -623,6 +613,7 @@ class UniversalModdingConverterApp:
         self.log(f"\n--- Starting Binary Compilation ({len(filepaths)} files) ---", "info")
         success_count, failed_count = 0, 0
         use_big_endian = self.pack_big_endian.get()
+        BOD_EXTENSIONS = ('.o3d', '.object-manifest', '.bod', '.bmat', '.psystem', '.layer', '.region', '.world', '.ssdecal')
 
         for in_path in filepaths:
             filename = os.path.basename(in_path)
@@ -647,7 +638,7 @@ class UniversalModdingConverterApp:
                         ExternalBAFConverter.xml_to_baf(in_path, out_path)
                         self.log(f"[OK] External Compiler: {filename} -> {os.path.basename(out_path)}", "success")
                         
-                    elif lower_base.endswith('.o3d') or lower_base.endswith('.object-manifest') or lower_base.endswith('.bod') or lower_base.endswith('.bmat'):
+                    elif lower_base.endswith(BOD_EXTENSIONS):
                         compile_bod_from_xml(in_path, out_path)
                         self.log(f"[OK] Native Compiler: {filename} -> {os.path.basename(out_path)}", "success")
                         
