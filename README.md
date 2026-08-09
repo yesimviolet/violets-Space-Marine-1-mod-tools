@@ -24,7 +24,16 @@ Place in the root of your Space Marine One folder and double click the bat file 
 
 ## pbr_to_spc 
 
-Allows you to convert Standard PBR textures to SM1 textures And Converting sm1 Textures to PBR 
+Allows you to convert Standard PBR textures to SM1 textures And Converting sm1 Textures to PBR and sfm textures to sm1 (only tested with Joazz model textures)
+
+## maps importer 
+
+Allows you to import dot world files which will then look for different layer and region files associated with it and then import the DCM files for it All the correct positioning along with flights Textures will have to be fixed manually though Because map files don't seem to have an object manifests Which is how most textures are imported correctly 
+
+## Attribute Editor  
+
+Attribute Editor is a program similar to Integration Studio for Space Marine 2 It allows you to edit attribute files and other files as well A lot easier
+
 
 # Texture formats
 
@@ -49,6 +58,6 @@ BLUE = Mask for _ref
 
 There is a secondary type of _lp But I haven't figured out what it's Channels are used for
 
-# Miscellaneous 
+# Miscellaneous info
 
 The secondary UV map on models is for blood splatter
